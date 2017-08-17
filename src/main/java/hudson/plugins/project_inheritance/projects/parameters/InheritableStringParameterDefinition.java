@@ -317,22 +317,16 @@ public class InheritableStringParameterDefinition extends StringParameterDefinit
 			//Fetching the full scope
 			List<ScopeEntry> fullScope = 
 					rootProperty.getScopedParameterDefinition(this.getName());
-			String owner = null;
-			for (ScopeEntry scope : fullScope) {
-				if (scope.param == this) {
-					owner = scope.owner;
-					break;
-				}
-			}
-			if (owner != null) {
-				b.append(owner);
-			} else if (this.rootProperty.getOwner() != null) {
-				b.append("?->");
-				b.append(this.rootProperty.getOwner().getFullName());
-			} else {
-				b.append("!->BROKEN");
-				
-			}
+                        
+                        if (fullScope.size() == 0) {
+                            b.append("!->UNKNOWN");
+                        } else {
+                            for (int i = 0; i < fullScope.size() - 1; ++i) {
+                                b.append(fullScope.get(i).owner);
+                                b.append("->");
+                            }
+                            b.append(fullScope.get(fullScope.size() - 1).owner);
+                        }
 		} else {
 			b.append("!->UNKNOWN");
 		}
