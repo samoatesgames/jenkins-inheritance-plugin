@@ -273,15 +273,10 @@ public class InheritableStringParameterReferenceDefinition extends
 			//Create the set of projects, whose parameters might be referenced
 			Set<InheritanceProject> references = new HashSet<>();
 			
-			//Add the job the parameter is defined in itself
-			if (project != null) {
-				references.add(project);
-			}
-			
 			//Then, check if the container class (usually a ProjectReference)
 			//made use of a 'targetJob' field, and if so, add it to the candidates
 			if (targetJob != null) {
-				TopLevelItem item = Jenkins.getInstance().getItem(targetJob);
+				hudson.model.Item item = Jenkins.getInstance().getItemByFullName(targetJob);
 				if (item instanceof InheritanceProject) {
 					references.add((InheritanceProject)item);
 				}
@@ -292,7 +287,7 @@ public class InheritableStringParameterReferenceDefinition extends
 				String[] jobs = parents.split(",");
 				for (String job : jobs) {
 					if (StringUtils.isBlank(job)) { continue; }
-					TopLevelItem item = Jenkins.getInstance().getItem(job.trim());
+					hudson.model.Item item = Jenkins.getInstance().getItemByFullName(job.trim());
 					if (item instanceof InheritanceProject) {
 						references.add((InheritanceProject)item);
 					}
@@ -302,11 +297,7 @@ public class InheritableStringParameterReferenceDefinition extends
 			//Read in all parameters from all referenced jobs (if any)
 			TreeSet<String> nameSet = new TreeSet<String>();
 			for (InheritanceProject proj : references) {
-				//Use full inheritance for parents, local values for current job
-				IMode mode = (proj == project)
-						? IMode.LOCAL_ONLY
-						: IMode.INHERIT_FORCED;
-				List<ParameterDefinition> pDefs = proj.getParameters(mode);
+				List<ParameterDefinition> pDefs = proj.getParameters(IMode.INHERIT_FORCED);
 				for (ParameterDefinition pd : pDefs) {
 					if (pd == null) { continue; }
 					String paramName = pd.getName();
