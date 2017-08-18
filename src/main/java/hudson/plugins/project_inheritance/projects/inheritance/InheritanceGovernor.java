@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
+import jenkins.model.ParameterizedJobMixIn;
 
 import org.kohsuke.stapler.Stapler;
 import org.kohsuke.stapler.StaplerRequest;
@@ -477,15 +478,32 @@ public abstract class InheritanceGovernor<T> {
 				Build.class, BuildCommand.class,
 				Queue.class, BuildTrigger.class,
 				Trigger.class, BuildStep.class
-			) ||
-			Reflection.calledFromMethod(
-					InheritanceProject.class,
-					"doBuild", "scheduleBuild2", "doBuildWithParameters"
 			)
 		) {
 			return true;
 		}
 		
+                if (Reflection.calledFromClassNames("org.jenkinsci.plugins.workflow.support.steps.build.BuildTriggerStepExecution"))
+                {
+                    return true;
+                }
+                
+                if (Reflection.calledFromMethod(
+					InheritanceProject.class,
+					"doBuild", "scheduleBuild2", "doBuildWithParameters"
+			))
+                {
+                    return true;
+                }
+                
+                if (Reflection.calledFromMethod(
+					ParameterizedJobMixIn.class,
+					"doBuild", "scheduleBuild2", "doBuildWithParameters", "scheduleBuild"
+			))
+                {
+                    return true;
+                }
+                
 		//In all other cases, we don't require (or want) inheritance
 		return false;
 	}

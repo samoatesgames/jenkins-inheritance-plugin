@@ -18,6 +18,7 @@
  License along with this library.  If not, see <http://www.gnu.org/licenses/>.
 -->
 
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form" xmlns:pf="/form">
    	
 	<f:entry title="${%First Class}" field="firstClass">
