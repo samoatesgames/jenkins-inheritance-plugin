@@ -23,13 +23,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
-import java.util.TreeSet;
-
 import org.apache.commons.lang.StringUtils;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.QueryParameter;
-
 import hudson.Extension;
 import hudson.RelativePath;
 import hudson.init.InitMilestone;
@@ -39,7 +36,6 @@ import hudson.model.ParameterDefinition;
 import hudson.model.ParameterValue;
 import hudson.model.Run;
 import hudson.model.StringParameterValue;
-import hudson.model.TopLevelItem;
 import hudson.plugins.project_inheritance.projects.InheritanceProject;
 import hudson.plugins.project_inheritance.projects.InheritanceProject.IMode;
 import hudson.plugins.project_inheritance.projects.parameters.InheritanceParametersDefinitionProperty.ScopeEntry;
@@ -47,6 +43,8 @@ import hudson.plugins.project_inheritance.projects.references.ParameterizedProje
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
 import hudson.util.XStream2;
+import java.util.Map.Entry;
+import java.util.TreeMap;
 import jenkins.model.Jenkins;
 
 /**
@@ -273,10 +271,16 @@ public class InheritableStringParameterReferenceDefinition extends
 			//Create the set of projects, whose parameters might be referenced
 			Set<InheritanceProject> references = new HashSet<>();
 			
+			Jenkins jenkins = Jenkins.getInstance();
+			if (jenkins == null)
+			{
+				return m;
+			}
+			
 			//Then, check if the container class (usually a ProjectReference)
 			//made use of a 'targetJob' field, and if so, add it to the candidates
 			if (targetJob != null) {
-				hudson.model.Item item = Jenkins.getInstance().getItemByFullName(targetJob);
+				hudson.model.Item item = jenkins.getItemByFullName(targetJob);
 				if (item instanceof InheritanceProject) {
 					references.add((InheritanceProject)item);
 				}
@@ -287,7 +291,7 @@ public class InheritableStringParameterReferenceDefinition extends
 				String[] jobs = parents.split(",");
 				for (String job : jobs) {
 					if (StringUtils.isBlank(job)) { continue; }
-					hudson.model.Item item = Jenkins.getInstance().getItemByFullName(job.trim());
+					hudson.model.Item item = jenkins.getItemByFullName(job.trim());
 					if (item instanceof InheritanceProject) {
 						references.add((InheritanceProject)item);
 					}
@@ -295,26 +299,29 @@ public class InheritableStringParameterReferenceDefinition extends
 			}
 			
 			//Read in all parameters from all referenced jobs (if any)
-			TreeSet<String> nameSet = new TreeSet<String>();
+			TreeMap<String, String> nameSet = new TreeMap<>();
 			for (InheritanceProject proj : references) {
 				List<ParameterDefinition> pDefs = proj.getParameters(IMode.INHERIT_FORCED);
 				for (ParameterDefinition pd : pDefs) {
 					if (pd == null) { continue; }
 					String paramName = pd.getName();
 					if (paramName != null) {
-						nameSet.add(paramName);
+						nameSet.put(paramName, proj.getDisplayName() + " - " + paramName);
 					}
 				}
 			}
 			
 			//Make sure, that the previously selected setting is always present
 			if (StringUtils.isNotBlank(name)) {
-				nameSet.add(name);
+				if (!nameSet.containsKey(name))
+				{
+					nameSet.put(name, "[Local] - " + name);
+				}
 			}
 			
 			//Fill the list box model with the final, sorted list of names
-			for (String n : nameSet) {
-				m.add(n, n);
+			for (Entry<String, String> n : nameSet.entrySet()) {
+				m.add(n.getValue(), n.getKey());
 			}
 			return m;
 		}
