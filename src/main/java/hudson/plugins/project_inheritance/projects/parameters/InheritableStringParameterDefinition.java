@@ -828,7 +828,7 @@ public class InheritableStringParameterDefinition extends StringParameterDefinit
 					new HashSet<InheritanceProject>();
 			refs.add(root);
 			for (AbstractProjectReference apr : root.getCompatibleProjects()) {
-				InheritanceProject mate = apr.getProject();
+				InheritanceProject mate = apr.getProject(root);
 				if (mate == null) { continue; }
 				refs.add(mate);
 			}

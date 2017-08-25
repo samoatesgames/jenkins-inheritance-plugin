@@ -39,6 +39,7 @@ import hudson.model.StringParameterValue;
 import hudson.plugins.project_inheritance.projects.InheritanceProject;
 import hudson.plugins.project_inheritance.projects.InheritanceProject.IMode;
 import hudson.plugins.project_inheritance.projects.parameters.InheritanceParametersDefinitionProperty.ScopeEntry;
+import hudson.plugins.project_inheritance.projects.references.MaskedProjectReference;
 import hudson.plugins.project_inheritance.projects.references.ParameterizedProjectReference;
 import hudson.util.FormValidation;
 import hudson.util.ListBoxModel;
@@ -290,8 +291,9 @@ public class InheritableStringParameterReferenceDefinition extends
 			if (StringUtils.isNotBlank(parents)) {
 				String[] jobs = parents.split(",");
 				for (String job : jobs) {
-					if (StringUtils.isBlank(job)) { continue; }
-					hudson.model.Item item = jenkins.getItemByFullName(job.trim());
+					if (StringUtils.isBlank(job)) { continue; }					
+					String resolvedJob = MaskedProjectReference.ResolveMaskName(job.trim(), project.getFullName());					
+					hudson.model.Item item = jenkins.getItemByFullName(resolvedJob);
 					if (item instanceof InheritanceProject) {
 						references.add((InheritanceProject)item);
 					}

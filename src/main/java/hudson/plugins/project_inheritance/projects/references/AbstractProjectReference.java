@@ -97,7 +97,7 @@ public abstract class AbstractProjectReference implements Describable<AbstractPr
 	 * @return the associated {@link InheritanceProject}, or null in case the
 	 * name could not be resolved at this moment.
 	 */
-	public InheritanceProject getProject() {
+	public InheritanceProject getProject(InheritanceProject owner) {
 		InheritanceProject ip = nameLookup.getIfPresent(this.name);
 		if (ip == null) {
 			ip = InheritanceProject.getProjectByName(this.name);

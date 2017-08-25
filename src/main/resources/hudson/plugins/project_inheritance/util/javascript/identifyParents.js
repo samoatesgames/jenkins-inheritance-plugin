@@ -47,15 +47,34 @@ function fillParentJobs(source, event) {
 	var selects = document.querySelectorAll(
 			"DIV[name='projects'] SELECT.setting-input[name='targetJob']"
 	);
+	var inputs = document.querySelectorAll(
+			"DIV[name='projects'] INPUT.setting-input[name='targetJob']"
+	);
 	
 	//Create the string enumerating all parent names (if any)
-	var parLst = "";
+	
+	var parent_names = []
 	if (selects) {
 		for (var i = 0; i<selects.length; i++) {
 			var name = selects[i].value;
 			if (!name) { continue; }
+			parent_names.push(name);
+		}
+	}
+	if (inputs) {
+		for (var i = 0; i<inputs.length; i++) {
+			var name = inputs[i].value;
+			if (!name) { continue; }
+			parent_names.push(name);
+		}
+	}
+
+	var parLst = "";
+	if (parent_names) {
+		for (var i = 0; i<parent_names.length; i++) {
+			var name = parent_names[i];
 			parLst += name;
-			if (i+1 < selects.length) {
+			if (i+1 < parent_names.length) {
 				parLst += ",";
 			}
 		}

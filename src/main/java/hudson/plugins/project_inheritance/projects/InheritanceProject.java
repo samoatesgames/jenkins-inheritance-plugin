@@ -131,6 +131,7 @@ import hudson.plugins.project_inheritance.projects.rebuild.InheritanceRebuildAct
 import hudson.plugins.project_inheritance.projects.rebuild.RebuildCause;
 import hudson.plugins.project_inheritance.projects.references.AbstractProjectReference;
 import hudson.plugins.project_inheritance.projects.references.ParameterizedProjectReference;
+import hudson.plugins.project_inheritance.projects.references.MaskedProjectReference;
 import hudson.plugins.project_inheritance.projects.references.ProjectReference;
 import hudson.plugins.project_inheritance.projects.references.Referencer;
 import hudson.plugins.project_inheritance.projects.references.SimpleProjectReference;
@@ -1298,7 +1299,7 @@ public class InheritanceProject	extends Project<InheritanceProject, InheritanceB
 		} else {
 			Map<String, InheritanceProject> projs = new LinkedHashMap();
 			for (AbstractProjectReference apr : this.getAllParentReferences(SELECTOR.BUILDER)) {
-				InheritanceProject ip = apr.getProject();
+				InheritanceProject ip = apr.getProject(this);
 				if (ip == null) { continue; }
 				projs.put(ip.getFullName(), ip);
 			}
@@ -2621,7 +2622,7 @@ public class InheritanceProject	extends Project<InheritanceProject, InheritanceB
 					out.add(ivf);
 				}
 				for (AbstractProjectReference ref : ip.getParentReferences()) {
-					AbstractProject<?, ?> par = ref.getProject();
+					AbstractProject<?, ?> par = ref.getProject(root);
 					if (par != null) { open.add(par); }
 				}
 			}
@@ -2722,7 +2723,7 @@ public class InheritanceProject	extends Project<InheritanceProject, InheritanceB
 		
 		for (AbstractProjectReference ref : this.getParentReferences()) {
 			if (ref == null) { continue; }
-			InheritanceProject ip = ref.getProject();
+			InheritanceProject ip = ref.getProject(this);
 			if (ip == null) { continue; }
 			lst.add(ip);
 		}
@@ -4108,10 +4109,10 @@ public class InheritanceProject	extends Project<InheritanceProject, InheritanceB
 		if (isConc) { return true; }
 		//Otherwise, check the parents' current config
 		for (AbstractProjectReference apr: this.getParentReferences()) {
-			if (apr == null || apr.getProject() == null) {
+			if (apr == null || apr.getProject(this) == null) {
 				continue;
 			}
-			if (apr.getProject().isConcurrentBuildFast(inherit)) {
+			if (apr.getProject(this).isConcurrentBuildFast(inherit)) {
 				return true;
 			}
 		}
@@ -4754,7 +4755,7 @@ public class InheritanceProject	extends Project<InheritanceProject, InheritanceB
 			//Examine parent references
 			if (ip != null) {
 				for (AbstractProjectReference ref : ip.getParentReferences()) {
-					AbstractProject<?, ?> next = ref.getProject();
+					AbstractProject<?, ?> next = ref.getProject(this);
 					if (next == null) {
 						//Found a missing dep
 						missing.add(new Dependency(ref.getName(), trace));
@@ -4786,7 +4787,7 @@ public class InheritanceProject	extends Project<InheritanceProject, InheritanceB
 		
 		//Examine project matings -- only for local item
 		for (AbstractProjectReference ref : this.compatibleProjects) {
-			InheritanceProject next = ref.getProject();
+			InheritanceProject next = ref.getProject(this);
 			if (next == null) {
 				//Found a missing dep
 				missing.add(new Dependency(
@@ -4868,8 +4869,11 @@ public class InheritanceProject	extends Project<InheritanceProject, InheritanceB
 		Deque<InheritanceProject> open = new LinkedList<>();
 		if (whenTheseProjectsAdded != null) {
 			for (String ref : whenTheseProjectsAdded) {
+				
+				String resolvedRef = MaskedProjectReference.ResolveMaskName(ref, this.getFullName());
+				
 				InheritanceProject p = Jenkins.getInstance().getItemByFullName(
-						ref, InheritanceProject.class
+						resolvedRef, InheritanceProject.class
 				);
 				//Possible cycle, by virtue of a missing dependency
 				if (p == null) { return true; }
@@ -4878,9 +4882,11 @@ public class InheritanceProject	extends Project<InheritanceProject, InheritanceB
 		}
 		if (addExisting) {
 			for (AbstractProjectReference par : this.getParentReferences()) {
-				InheritanceProject p = par.getProject();
+				InheritanceProject p = par.getProject(this);
 				//Possible cycle, by virtue of a missing dependency
-				if (p == null) { return true; }
+				if (p == null) {
+					return true; 
+				}
 				open.add(p);
 			}
 		}
@@ -4896,18 +4902,18 @@ public class InheritanceProject	extends Project<InheritanceProject, InheritanceB
 			//Popping the first element
 			InheritanceProject p = open.pop();
 			//Checking if we've seen that parent already
-			if (closed.contains(p.name)) {
+			if (closed.contains(p.getFullName())) {
 				//Detected a cyclic dependency
 				return true;
 			}
 			// Otherwise, we add all its parents to our open set, to be explored
 			for (AbstractProjectReference ref : p.getParentReferences()) {
-				InheritanceProject refP = ref.getProject();
+				InheritanceProject refP = ref.getProject(this);
 				if (refP != null) {
 					open.push(refP);
 				}
 			}
-			closed.add(p.name);
+			closed.add(p.getFullName());
 		}
 		// If we reach this spot, there is no such dependency
 		return false;
@@ -5191,7 +5197,7 @@ public class InheritanceProject	extends Project<InheritanceProject, InheritanceB
 					);
 			
 			for (AbstractProjectReference apr : refs) {
-				InheritanceProject ip = apr.getProject();
+				InheritanceProject ip = apr.getProject(this);
 				if (ip == null) { continue; }
 				List<Builder> bLst = ip.getBuildersList(IMode.LOCAL_ONLY).toList();
 				if (clazz != null) {

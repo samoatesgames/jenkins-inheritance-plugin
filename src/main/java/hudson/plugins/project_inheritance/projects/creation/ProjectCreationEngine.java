@@ -747,7 +747,7 @@ public class ProjectCreationEngine extends ManagementLink implements Saveable, D
 			//Get & iterate over the compatible matings defined on that project
 			List<AbstractProjectReference> refs = firstP.getCompatibleProjects();
 			for (AbstractProjectReference ref : refs) {
-				InheritanceProject secondP = ref.getProject();
+				InheritanceProject secondP = ref.getProject(firstP);
 				if (secondP == null) { continue; }
 				
 				String variance =

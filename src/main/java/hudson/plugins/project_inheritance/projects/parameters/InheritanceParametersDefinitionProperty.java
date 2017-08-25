@@ -526,7 +526,7 @@ public class InheritanceParametersDefinitionProperty extends
 		
 		//Now, we get the sorted list of all parents
 		for (AbstractProjectReference ref : ip.getAllParentReferences(SELECTOR.PARAMETER, true)) {
-			InheritanceProject par = ref.getProject();
+			InheritanceProject par = ref.getProject(ip);
 			if (par == null) { continue; }
 			
 			//Grab the LOCALLY defined parameters for the project

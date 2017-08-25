@@ -51,7 +51,7 @@ public class SimpleParameterizedProjectReference extends SimpleProjectReference 
 			String targetJob,
 			List<ParameterDefinition> parameters) {
 		super(targetJob);
-		InheritanceProject project = this.getProject();
+		InheritanceProject project = this.getProject(null);
 		if (project != null && parameters != null) {
 			for (ParameterDefinition pd : parameters) {
 				if (pd instanceof InheritableStringParameterDefinition) {

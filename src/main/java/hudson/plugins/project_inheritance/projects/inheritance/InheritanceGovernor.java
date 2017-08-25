@@ -221,7 +221,7 @@ public abstract class InheritanceGovernor<T> {
 		
 		for (AbstractProjectReference apr : root.getParentReferences(orderMode)) {
 			if (apr == null) { continue; }
-			InheritanceProject ip = apr.getProject();
+			InheritanceProject ip = apr.getProject(root);
 			if (ip == null) { continue; }
 			int prio = PrioComparator.getPriorityFor(apr, orderMode);
 			if (prio <= 0) {

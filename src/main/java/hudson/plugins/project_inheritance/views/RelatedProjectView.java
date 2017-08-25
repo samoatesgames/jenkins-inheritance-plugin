@@ -232,7 +232,7 @@ public class RelatedProjectView extends View {
 		Iterator<AbstractProjectReference> iter = this.getProjectReferences().iterator(); 
 		while (iter != null && iter.hasNext()) {
 			AbstractProjectReference apr = iter.next();
-			InheritanceProject ip = apr.getProject();
+			InheritanceProject ip = apr.getProject(null);
 			if (ip == null) { continue; }
 			
 			Map<InheritanceProject, Relationship> map = ip.getRelationships();
