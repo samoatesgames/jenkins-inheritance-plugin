@@ -24,6 +24,7 @@ import hudson.model.AbstractBuild;
 import hudson.plugins.project_inheritance.projects.InheritanceBuild;
 
 import com.sonyericsson.rebuild.RebuildValidator;
+import hudson.model.Run;
 
 
 @Extension
@@ -38,6 +39,13 @@ public class RebuildValidatorSuppressor extends RebuildValidator {
 	 */
 	@SuppressWarnings("rawtypes")
 	public boolean isApplicable(AbstractBuild build) {
+		if (build instanceof InheritanceBuild) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean isApplicable(Run build) {
 		if (build instanceof InheritanceBuild) {
 			return true;
 		}
