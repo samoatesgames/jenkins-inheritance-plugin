@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+        <action>
+            <actionName>CUSTOM-Run Jenkins</actionName>
+            <displayName>Run Jenkins</displayName>
+            <goals>
+                <goal>hpi:run</goal>
+            </goals>
+            <properties>
+                <Xmx4096m></Xmx4096m>
+                
+                <hudson.model.ParametersAction.keepUndefinedParameters>true</hudson.model.ParametersAction.keepUndefinedParameters>
+            </properties>
+        </action>
+        <action>
+            <actionName>CUSTOM-Debug Jenkins</actionName>
+            <displayName>Debug Jenkins</displayName>
+            <goals>
+                <goal>hpi:run</goal>
+            </goals>
+            <properties>
+                <jpda.listen>maven</jpda.listen>
+                <MAVEN_OPTS>-Xmx1024m</MAVEN_OPTS>
+            </properties>
+        </action>
+        
+    </actions>
